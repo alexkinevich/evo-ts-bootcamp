@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React from 'react';
 import { NOT_SOLVED_STATUS, SORTED_STATUS, SORTING_STATUS, SORTING_PAUSED } from "../../constants/constants";
 import styles from './style.module.css';
 
@@ -15,26 +15,36 @@ type PauseSorting = () => void;
 
 type ReplaceArrayNumbers = (index: number, arrayOfNumbers: number[]) => number[];
 
-const BubblesField: React.FC<BubblesProps> = ()=>{
-    const [bubbleNumbers, setBubbleNumbers] = useState([] as number[]);
-    const [bubblesCount, setBubblesCount] = useState(30);
-    const [currentStep, setCurrentStep] = useState(1);
-    const [status, setStatus] = useState(NOT_SOLVED_STATUS);
+type BubblesFieldState = {
+    bubbleNumbers: number[],
+    bubblesCount: 30,
+    currentStep: number,
+    status: string
+};
 
-    // useEffect(() => {
-    //     fillNumbers();
-    // });
+export class BubblesField extends React.Component<BubblesProps, BubblesFieldState>
+{
+    constructor(props: BubblesProps){
+        super(props);
 
-    const generateRandomNumbers: GenateRandomNumbers = () => {
+        this.state = {
+            bubbleNumbers: [] as number[],
+            bubblesCount: 30,
+            currentStep: 1,
+            status: NOT_SOLVED_STATUS
+        }
+    }
+
+    generateRandomNumbers: GenateRandomNumbers = () => {
         const numbersArray: number[] = [];
-        for (let index = 0; index < bubblesCount; index++) {
+        for (let index = 0; index < this.state.bubblesCount; index++) {
             numbersArray[index] = Math.round(Math.random() * 100);
         }
 
         return numbersArray;
     };
 
-    const replaceArrayNumbers: ReplaceArrayNumbers = (arrayIndex, arrayOfNumbers) => {
+    replaceArrayNumbers: ReplaceArrayNumbers = (arrayIndex, arrayOfNumbers) => {
         const numberItemForCurrentStep = arrayOfNumbers[arrayIndex];
         arrayOfNumbers[arrayIndex] = arrayOfNumbers[arrayIndex - 1];
         arrayOfNumbers[arrayIndex - 1] = numberItemForCurrentStep;
@@ -42,75 +52,92 @@ const BubblesField: React.FC<BubblesProps> = ()=>{
         return arrayOfNumbers;
     };
 
-    const pauseSorting: PauseSorting = () => {
-        setStatus(SORTING_PAUSED);
+    pauseSorting: PauseSorting = () => {
+        this.setState({
+            status: SORTING_PAUSED
+        });
     }
 
-    const startSorting = (): void => {
+    startSorting = (): void => {
+        const {status, currentStep, bubbleNumbers} = this.state;
+
         switch (status) {
             case NOT_SOLVED_STATUS:
-                //Start sorting
-                setStatus(SORTING_STATUS);
-                doStepForBubbleSort(currentStep, bubbleNumbers);
+                this.setState({
+                    status: SORTING_STATUS
+                });
+                this.doStepForBubbleSort(currentStep, bubbleNumbers);
                 break;
             case SORTING_STATUS:
-                // Pause sort
-                pauseSorting();
+                this.pauseSorting();
                 break;
             case SORTING_PAUSED:
-                setStatus(SORTING_STATUS);
-                doStepForBubbleSort(currentStep, bubbleNumbers);
+                this.setState(() => ({
+                    status: SORTING_STATUS
+                  }));
+                this.setState({
+                    status: SORTING_STATUS
+                  },
+                  () => { this.doStepForBubbleSort(currentStep, bubbleNumbers) });
                 break;
             default:
                 break;
         }
     };
 
-    const fillNumbers: FillNumbers = () => {
-        setBubbleNumbers(generateRandomNumbers());
+    fillNumbers: FillNumbers = () => {
+        this.setState({
+            bubbleNumbers: this.generateRandomNumbers(),
+            status: NOT_SOLVED_STATUS
+        });
     }
 
-    const doStepForBubbleSort: DoStepForBubbleSort = (step = 1, arrayOfNumbers) => {
+    doStepForBubbleSort: DoStepForBubbleSort = (step = 1, arrayOfNumbers) => {
         let updatedArrayOfNumbers: number[] = [...arrayOfNumbers];
 
         if (step < arrayOfNumbers.length && step > 0) {
             if (arrayOfNumbers[step] < arrayOfNumbers[step - 1]) {
-                replaceArrayNumbers(step, updatedArrayOfNumbers);
-                setBubbleNumbers(updatedArrayOfNumbers);
+                this.replaceArrayNumbers(step, updatedArrayOfNumbers);
+                this.setState({
+                    bubbleNumbers: updatedArrayOfNumbers
+                });
                 step = 1;
             } else{
                 step++;
             }
         }
     
-        if (status !== SORTING_PAUSED) {
+        if (this.state.status !== SORTING_PAUSED) {
             if (step < updatedArrayOfNumbers.length) {
-                setTimeout(doStepForBubbleSort, 2, step, updatedArrayOfNumbers)
+                setTimeout(this.doStepForBubbleSort.bind(this, step, updatedArrayOfNumbers), 4)
             } else{
-                // Finish sorting
-                console.log("Array has been filtered")
+                this.setState({
+                    status: SORTED_STATUS
+                });
             }
-        } else{
-            console.log("asd")
         }
     }
 
-    return (
-    <div>
-        <h1>
-            Bubble Sort
-        </h1>
-        <div className={styles.field}>
-        {
-            bubbleNumbers.map(number=><div style={{height: number*2}} className={styles.line}></div>)
-        }
-        </div>
-        <div className={styles.buttons}>
-            <button onClick={fillNumbers}>New Set</button>
-            <button onClick={startSorting}>{status === SORTING_STATUS ? "Pause" : "Start" }</button>
-        </div>
-        <pre>{status}</pre>
-    </div>);
+    render()
+    {
+        const { status, bubbleNumbers } = this.state;
+
+        return (<div>
+            <h1>
+                Bubble Sort
+            </h1>
+            <div className={styles.field}>
+            {
+                bubbleNumbers.map(number=><div style={{height: number*2}} className={styles.line}></div>)
+            }
+            </div>
+            <div className={styles.buttons}>
+                <button onClick={this.fillNumbers}>New Set</button>
+                <button onClick={this.startSorting} disabled={bubbleNumbers.length < 1 || status === SORTED_STATUS}>{status === SORTING_STATUS ? "Pause" : "Start" }</button>
+            </div>
+            <pre>{status}</pre>
+        </div>);
+    }
 }
 
 export default BubblesField;
