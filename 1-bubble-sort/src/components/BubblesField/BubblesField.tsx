@@ -1,5 +1,5 @@
 import React from 'react';
-import { NOT_SOLVED_STATUS, SORTED_STATUS, SORTING_STATUS, SORTING_PAUSED } from "../../constants/constants";
+import { SORT_STATUS } from "../../constants/constants";
 import styles from './style.module.css';
 
 interface BubblesProps {
@@ -31,7 +31,7 @@ export class BubblesField extends React.Component<BubblesProps, BubblesFieldStat
             bubbleNumbers: [] as number[],
             bubblesCount: 30,
             currentStep: 1,
-            status: NOT_SOLVED_STATUS
+            status: SORT_STATUS.NotSolved
         }
     }
 
@@ -54,7 +54,7 @@ export class BubblesField extends React.Component<BubblesProps, BubblesFieldStat
 
     pauseSorting: PauseSorting = () => {
         this.setState({
-            status: SORTING_PAUSED
+            status: SORT_STATUS.SortingPaused
         });
     }
 
@@ -62,21 +62,18 @@ export class BubblesField extends React.Component<BubblesProps, BubblesFieldStat
         const {status, currentStep, bubbleNumbers} = this.state;
 
         switch (status) {
-            case NOT_SOLVED_STATUS:
+            case SORT_STATUS.NotSolved:
                 this.setState({
-                    status: SORTING_STATUS
+                    status: SORT_STATUS.Sorting
                 });
                 this.doStepForBubbleSort(currentStep, bubbleNumbers);
                 break;
-            case SORTING_STATUS:
+            case SORT_STATUS.Sorting:
                 this.pauseSorting();
                 break;
-            case SORTING_PAUSED:
-                this.setState(() => ({
-                    status: SORTING_STATUS
-                  }));
+            case SORT_STATUS.SortingPaused:
                 this.setState({
-                    status: SORTING_STATUS
+                    status: SORT_STATUS.Sorting
                   },
                   () => { this.doStepForBubbleSort(currentStep, bubbleNumbers) });
                 break;
@@ -88,12 +85,12 @@ export class BubblesField extends React.Component<BubblesProps, BubblesFieldStat
     fillNumbers: FillNumbers = () => {
         this.setState({
             bubbleNumbers: this.generateRandomNumbers(),
-            status: NOT_SOLVED_STATUS
+            status: SORT_STATUS.NotSolved
         });
     }
 
     doStepForBubbleSort: DoStepForBubbleSort = (step = 1, arrayOfNumbers) => {
-        let updatedArrayOfNumbers: number[] = [...arrayOfNumbers];
+        const updatedArrayOfNumbers: number[] = [...arrayOfNumbers];
 
         if (step < arrayOfNumbers.length && step > 0) {
             if (arrayOfNumbers[step] < arrayOfNumbers[step - 1]) {
@@ -107,12 +104,12 @@ export class BubblesField extends React.Component<BubblesProps, BubblesFieldStat
             }
         }
     
-        if (this.state.status !== SORTING_PAUSED) {
+        if (this.state.status !== SORT_STATUS.SortingPaused) {
             if (step < updatedArrayOfNumbers.length) {
                 setTimeout(this.doStepForBubbleSort.bind(this, step, updatedArrayOfNumbers), 4)
             } else{
                 this.setState({
-                    status: SORTED_STATUS
+                    status: SORT_STATUS.Sorted
                 });
             }
         }
@@ -133,7 +130,7 @@ export class BubblesField extends React.Component<BubblesProps, BubblesFieldStat
             </div>
             <div className={styles.buttons}>
                 <button onClick={this.fillNumbers}>New Set</button>
-                <button onClick={this.startSorting} disabled={bubbleNumbers.length < 1 || status === SORTED_STATUS}>{status === SORTING_STATUS ? "Pause" : "Start" }</button>
+                <button onClick={this.startSorting} disabled={bubbleNumbers.length < 1 || status === SORT_STATUS.Sorted}>{status === SORT_STATUS.Sorting ? "Pause" : "Start" }</button>
             </div>
             <pre>{status}</pre>
         </div>);
