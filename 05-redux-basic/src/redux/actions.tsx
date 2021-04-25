@@ -1,23 +1,23 @@
 import { CREDIT, DEBIT, UPDATE, GET_BALANCE_WITH_TAX} from './constants/constants';
 
-type Action = {
+export type Action = {
     "type": string,
     "payload": number
 }
 
-type ActionCreator = (payload: number) => Action;
+export type ActionCreator = (payload: number) => Action;
 
-export const updatesBalance: ActionCreator = (payload) => ({
+export const setBalance: ActionCreator = (payload) => ({
     type: UPDATE,
     payload
 });
 
-export const debitBalance: ActionCreator = (payload) => ({
+export const debitFromBalance: ActionCreator = (payload) => ({
     type: DEBIT,
     payload
 });
 
-export const setBalance: ActionCreator = (payload) => ({
+export const addToBalance: ActionCreator = (payload) => ({
     type: CREDIT,
     payload
 });

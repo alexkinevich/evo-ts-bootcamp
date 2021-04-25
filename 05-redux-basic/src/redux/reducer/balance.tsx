@@ -4,6 +4,7 @@ import {
     CREDIT,
     GET_BALANCE_WITH_TAX
   } from '../constants/constants';
+  import { Action } from '../actions';
   
   const initialBalance = 0;
   
