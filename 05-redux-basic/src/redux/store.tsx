@@ -1,9 +1,5 @@
-import { createStore, compose  } from 'redux';
-import DevTools from './DevTools';
+import { createStore  } from 'redux';
+import {devToolsEnhancer} from 'redux-devtools-extension'
 import reducer from './reducer';
 
-const enhancer = compose(
-    DevTools.instrument()
-);
-
-export default createStore(reducer, enhancer);
+export default createStore(reducer, devToolsEnhancer({}));
